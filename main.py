@@ -90,9 +90,10 @@ def get_playlist_track_ids(sp, playlist_id):
     track_ids = set()
     results = sp.playlist_tracks(playlist_id)
     while results:
-        for item in results["items"]:
-            if item["track"] and item["track"]["id"]:
-                track_ids.add(item["track"]["id"])
+        for item in results.get("items", []):
+            track = item.get("track")
+            if track and track.get("id"):
+                track_ids.add(track["id"])
         results = sp.next(results) if results.get("next") else None
     return track_ids
 
