@@ -65,10 +65,10 @@ def get_youtube_playlist_videos(youtube, playlist_id):
 
 def clean_title(title):
     # Elimina texto entre paréntesis o corchetes: (Official Video), [Lyric Video], etc.
-    title = re.sub(r'[\(\[].*?[\)\]]', '', title)
+    title = re.sub(r'\[.*?\]', '', title)
     # Si el formato del título de YouTube es "Artista - Título", nos quedamos con el título
     if '-' in title:
-        title = title.split('-', 1)[-1]
+        title = title.split('-', 1)[0]
     return title.strip()
 
 
@@ -80,7 +80,7 @@ def clean_artist(artist):
 
 
 def search_spotify_track(sp, title, artist):
-    query = f"track:{title} artist:{artist}"
+    query = f"track:{artist} artist:{title}"
     results = sp.search(q=query, type="track", limit=1)
     tracks = results.get("tracks", {}).get("items", [])
     return tracks[0] if tracks else None
@@ -89,12 +89,10 @@ def search_spotify_track(sp, title, artist):
 def get_playlist_track_ids(sp, playlist_id):
     track_ids = set()
     results = sp.playlist_tracks(playlist_id)
-    while results:
-        for item in results.get("items", []):
-            track = item.get("track")
-            if track and track.get("id"):
-                track_ids.add(track["id"])
-        results = sp.next(results) if results.get("next") else None
+    for item in results.get("items", []):
+        track = item.get("track")
+        if track and track.get("id"):
+            track_ids.add(track["id"])
     return track_ids
 
 
@@ -184,9 +182,9 @@ def main():
                 "status": "not_found",
             }
 
-        save_state(state)
-
     print("Done!")
+
+    save_state(state)
 
 
 if __name__ == "__main__":
